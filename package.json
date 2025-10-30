@@ -9,8 +9,21 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@astrojs/react": "^4.4.1",
+    "@astrojs/vercel": "^9.0.0",
+    "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.1.16",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "astro": "^5.15.2",
-    "tailwindcss": "^4.1.16"
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "react": "^19.2.0",
+    "react-day-picker": "^9.11.1",
+    "react-dom": "^19.2.0",
+    "react-hook-form": "^7.65.0",
+    "tailwindcss": "^4.1.16",
+    "zod": "^3.25.76"
   }
 }
