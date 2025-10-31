@@ -5,6 +5,10 @@ Modern, responsive landing page for Junk Hauler Boise, a professional junk remov
 ## Features
 
 - **Modern Design**: Built with Astro and Tailwind CSS
+- **AI-Powered Quote System**: Multi-step lead form with Claude AI photo analysis
+- **Instant Cubic Yard Estimates**: AI analyzes junk photos and estimates volume
+- **Automatic Pricing**: Real-time pricing calculation with realistic ranges
+- **Smart Lead Capture**: Collects contact info before showing estimates
 - **Fully Responsive**: Optimized for mobile, tablet, and desktop
 - **Fast Performance**: Static site generation for lightning-fast loading
 - **SEO Optimized**: Proper meta tags and semantic HTML
@@ -13,6 +17,8 @@ Modern, responsive landing page for Junk Hauler Boise, a professional junk remov
 ## Pages
 
 - **Landing Page**: Hero section, services, benefits, service area, CTA, about, and footer
+- **AI Quote Form** (`/quote`): 6-step lead capture form with photo uploads and instant AI estimates
+- **Quote Success** (`/quote/success`): Displays AI-powered cubic yard estimates and pricing ranges
 
 ## Services Highlighted
 
@@ -70,8 +76,13 @@ See `DEPLOYMENT_INSTRUCTIONS.md` in the parent directory for detailed steps.
 ## Tech Stack
 
 - [Astro](https://astro.build) - Static Site Generator
+- [React](https://react.dev) - Interactive UI Components
 - [Tailwind CSS](https://tailwindcss.com) - Styling
 - [TypeScript](https://www.typescriptlang.org/) - Type Safety
+- [Anthropic Claude AI](https://www.anthropic.com) - AI Photo Analysis & Volume Estimation
+- [Cloudinary](https://cloudinary.com) - Photo Upload & Storage
+- [React Hook Form](https://react-hook-form.com) - Form State Management
+- [Zod](https://zod.dev) - Schema Validation
 
 ## License
 
