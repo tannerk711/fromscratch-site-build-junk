@@ -24,6 +24,8 @@ const formSchema = z.object({
   contactName: z.string().min(2, 'Name is required'),
   contactPhone: z.string().min(10, 'Phone number is required'),
   contactEmail: z.string().email('Valid email is required'),
+  // Honeypot field for spam protection - should always be empty
+  website: z.string().max(0, 'Invalid submission').optional(),
 });
 
 const STEPS = [
@@ -53,6 +55,7 @@ export default function MultiStepForm({ client:load }) {
       contactName: '',
       contactPhone: '',
       contactEmail: '',
+      website: '', // Honeypot field - must stay empty
     },
   });
 

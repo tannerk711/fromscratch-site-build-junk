@@ -8,9 +8,9 @@ export default function PhotoUploadStep() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
 
-  // Cloudinary configuration for direct API upload
-  const CLOUDINARY_CLOUD_NAME = 'dk6zsdaaj';
-  const CLOUDINARY_UPLOAD_PRESET = 'junk-removal-unsigned';
+  // Cloudinary configuration for direct API upload from environment variables
+  const CLOUDINARY_CLOUD_NAME = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
   console.log('🚀 PhotoUploadStep v2.0 - Direct API Upload Loaded');

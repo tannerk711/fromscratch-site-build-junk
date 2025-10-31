@@ -83,6 +83,18 @@ export default function PriceEstimate({ estimate, isSubmitting }) {
               className="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
+
+          {/* Honeypot field - hidden from humans, visible to bots */}
+          <div className="hidden" aria-hidden="true">
+            <label htmlFor="website">Website (leave blank)</label>
+            <input
+              type="text"
+              id="website"
+              {...register('website')}
+              tabIndex="-1"
+              autoComplete="off"
+            />
+          </div>
         </div>
       </div>
     </div>
