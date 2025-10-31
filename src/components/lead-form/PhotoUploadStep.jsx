@@ -25,7 +25,7 @@ export default function PhotoUploadStep() {
 
     // Cloudinary configuration (hardcoded for client-side upload)
     const cloudName = 'dk6zsdaaj';
-    const uploadPreset = 'junk-haulers';
+    const uploadPreset = 'junk-removal-unsigned';
 
     console.log('Initializing Cloudinary widget with:', { cloudName, uploadPreset });
 
