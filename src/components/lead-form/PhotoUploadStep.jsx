@@ -1,6 +1,7 @@
 import { useFormContext } from 'react-hook-form';
 import { useState } from 'react';
 
+// Force fresh Vercel deployment with correct Root Directory setting
 export default function PhotoUploadStep() {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const photos = watch('photos') || [];
