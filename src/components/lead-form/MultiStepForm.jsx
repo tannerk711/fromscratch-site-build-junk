@@ -9,6 +9,7 @@ import DateStep from './DateStep';
 import PhotoUploadStep from './PhotoUploadStep';
 import PriceEstimate from './PriceEstimate';
 import FormProgress from './FormProgress';
+import AnimatedLoadingText from './AnimatedLoadingText';
 
 const formSchema = z.object({
   propertyType: z.string().min(1, 'Please select a property type'),
@@ -41,7 +42,7 @@ export default function MultiStepForm({ client:load }) {
 
   const methods = useForm({
     resolver: zodResolver(formSchema),
-    mode: 'onChange',
+    mode: 'onTouched',
     defaultValues: {
       propertyType: '',
       junkTypes: [],
@@ -61,7 +62,17 @@ export default function MultiStepForm({ client:load }) {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        methods.reset(parsed);
+        // Don't restore contact fields to prevent validation errors
+        const { contactName, contactPhone, contactEmail, notes, ...safeData } = parsed;
+        methods.reset({
+          ...safeData,
+          contactName: '',
+          contactPhone: '',
+          contactEmail: '',
+          notes: '',
+        }, {
+          keepErrors: false,  // Don't keep validation errors
+        });
       } catch (e) {
         console.error('Failed to load saved form data', e);
       }
@@ -90,10 +101,8 @@ export default function MultiStepForm({ client:load }) {
     const isValid = await methods.trigger(fields);
 
     if (isValid) {
-      // If we're on the photo step, get AI estimate
-      if (currentStep === 4) {
-        await getAIEstimate();
-      }
+      // Clear all errors before navigating to next step
+      methods.clearErrors();
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
     }
   };
@@ -116,10 +125,12 @@ export default function MultiStepForm({ client:load }) {
 
       if (response.ok) {
         const data = await response.json();
-        setEstimate(data);
+        return data;
       }
+      throw new Error('Failed to get estimate');
     } catch (error) {
       console.error('Failed to get estimate:', error);
+      throw error;
     }
   };
 
@@ -127,11 +138,14 @@ export default function MultiStepForm({ client:load }) {
     setIsSubmitting(true);
 
     try {
+      // Get AI estimate first
+      const estimateData = await getAIEstimate();
+
       // Save lead to database
       const leadResponse = await fetch('/api/save-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, estimate }),
+        body: JSON.stringify({ ...data, estimate: estimateData }),
       });
 
       if (!leadResponse.ok) throw new Error('Failed to save lead');
@@ -140,13 +154,19 @@ export default function MultiStepForm({ client:load }) {
       await fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, estimate }),
+        body: JSON.stringify({ ...data, estimate: estimateData }),
       });
 
       // Clear form data
       localStorage.removeItem('leadFormData');
 
-      // Redirect to success page or show success message
+      // Store estimate in sessionStorage for success page
+      sessionStorage.setItem('quoteEstimate', JSON.stringify({
+        estimate: estimateData,
+        formData: data
+      }));
+
+      // Redirect to success page with estimate
       window.location.href = '/quote/success';
     } catch (error) {
       console.error('Failed to submit form:', error);
@@ -199,9 +219,19 @@ export default function MultiStepForm({ client:load }) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="ml-auto inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="ml-auto inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? 'Submitting...' : 'Get Your Free Quote'}
+                    {isSubmitting ? (
+                      <>
+                        <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <AnimatedLoadingText />
+                      </>
+                    ) : (
+                      'Get Your Free Quote'
+                    )}
                   </button>
                 )}
               </div>

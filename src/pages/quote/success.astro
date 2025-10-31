@@ -1,36 +1,41 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import QuoteResults from '../../components/lead-form/QuoteResults';
 ---
 
-<Layout title="Quote Submitted - Junk Hauler Boise">
+<Layout title="Your Instant Quote - Junk Hauler Boise">
 	<div class="min-h-screen bg-slate-50 py-12">
-		<div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-			<div class="bg-white rounded-2xl shadow-xl p-8 text-center">
-				<div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-					<svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-						<path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-					</svg>
+		<div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+			<div class="bg-white rounded-2xl shadow-xl p-8">
+				<div class="text-center mb-8">
+					<div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+						<svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+							<path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+						</svg>
+					</div>
+
+					<h1 class="mt-6 font-display text-3xl font-semibold text-slate-900">
+						Here's Your Instant Quote!
+					</h1>
+
+					<p class="mt-4 text-lg text-slate-600">
+						Our AI has analyzed your photos and generated an estimate. We'll contact you shortly to confirm details.
+					</p>
 				</div>
 
-				<h1 class="mt-6 font-display text-3xl font-semibold text-slate-900">
-					Quote Submitted Successfully!
-				</h1>
-
-				<p class="mt-4 text-lg text-slate-600">
-					Thank you for choosing Junk Hauler Boise. We've received your request and our team is reviewing your photos and details.
-				</p>
+				<QuoteResults client:load />
 
 				<div class="mt-8 rounded-lg bg-blue-50 p-6">
-					<h2 class="font-display text-lg font-semibold text-slate-900">
+					<h2 class="font-display text-lg font-semibold text-slate-900 text-center">
 						What happens next?
 					</h2>
-					<ul class="mt-4 space-y-3 text-left text-slate-700">
+					<ul class="mt-4 space-y-3 text-slate-700">
 						<li class="flex items-start">
 							<svg class="mt-0.5 h-5 w-5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
 								<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 							<span class="ml-3">
-								<span class="font-medium">Within 1 hour:</span> We'll review your photos and send you a detailed quote via email
+								<span class="font-medium">Within 1 hour:</span> We'll call or text you to confirm your quote and answer any questions
 							</span>
 						</li>
 						<li class="flex items-start">
@@ -38,7 +43,7 @@ import Layout from '../../layouts/Layout.astro';
 								<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 							<span class="ml-3">
-								<span class="font-medium">We'll call you:</span> To confirm details and schedule your pickup
+								<span class="font-medium">Schedule pickup:</span> Choose a convenient time for your junk removal
 							</span>
 						</li>
 						<li class="flex items-start">
@@ -46,7 +51,7 @@ import Layout from '../../layouts/Layout.astro';
 								<path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
 							</svg>
 							<span class="ml-3">
-								<span class="font-medium">Same/next-day service:</span> We'll haul away your junk quickly and professionally
+								<span class="font-medium">We haul it away:</span> Same/next-day service with eco-friendly disposal
 							</span>
 						</li>
 					</ul>

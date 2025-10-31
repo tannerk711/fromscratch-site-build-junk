@@ -40,7 +40,7 @@ export async function POST({ request }) {
 
     // Call Claude API
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-5-20250929',
       max_tokens: 1024,
       messages: [
         {
@@ -99,12 +99,13 @@ function buildEstimationPrompt(junkTypes, propertyType, photoCount) {
 - Reported Junk Types: ${junkTypes.join(', ')}
 
 **Reference Examples (for calibration):**
-- A standard 3-seater sofa = ~10-15 cubic yards
-- A king mattress + box spring = ~15-20 cubic yards
-- A refrigerator = ~20-25 cubic yards
-- A pickup truck bed full (loosely packed) = ~50-75 cubic yards
-- A single room cleanout (10x10 room) = ~100-150 cubic yards
-- A garage full of items = ~200-300 cubic yards
+- A standard 3-seater sofa = ~2-3 cubic yards
+- A king mattress + box spring = ~3-4 cubic yards
+- A refrigerator = ~4-5 cubic yards
+- A standard pickup truck bed (8ft, loosely packed) = ~2-3 cubic yards
+- A single room cleanout (10x10 room, half full) = ~10-15 cubic yards
+- A full one-car garage = ~30-50 cubic yards
+- A full dump truck load = ~10-14 cubic yards
 
 **Instructions:**
 1. Carefully examine all images provided
