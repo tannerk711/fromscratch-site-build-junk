@@ -12,6 +12,8 @@ export default function PhotoUploadStep() {
   const CLOUDINARY_UPLOAD_PRESET = 'junk-removal-unsigned';
   const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
+  console.log('🚀 PhotoUploadStep v2.0 - Direct API Upload Loaded');
+
   const validateFile = (file) => {
     // Check file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
