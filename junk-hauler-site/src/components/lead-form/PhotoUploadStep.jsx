@@ -43,7 +43,7 @@ export default function PhotoUploadStep() {
     loadConfig();
   }, []);
 
-  console.log('🚀 PhotoUploadStep v3.0 - Server-Side Config Loaded');
+  console.log('🚀 PhotoUploadStep v3.1 - Server-Side Config with Runtime Env Vars');
 
   const validateFile = (file) => {
     // Check file type
