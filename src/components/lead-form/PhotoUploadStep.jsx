@@ -37,7 +37,6 @@ export default function PhotoUploadStep() {
         clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
         maxFileSize: 10000000, // 10MB
         cropping: false,
-        folder: 'junk-removal-leads',
         resourceType: 'image',
       },
       (error, result) => {
