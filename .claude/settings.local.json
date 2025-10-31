@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(npm create:*)",
+      "Bash(npx astro:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Junk Hauler Boise landing page\n\nCreated a modern, responsive landing page for Junk Hauler Boise with:\n- Hero section with company tagline and CTAs\n- Services section showcasing all offerings\n- Why Choose Us section highlighting key benefits\n- Service area section listing all covered cities\n- About section with company information\n- Professional footer with contact details\n- Tailwind CSS styling\n- Responsive design for all devices\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(gh repo create:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(curl:*)",
+      "Bash(msiexec /i /tmp/gh-cli.msi /qn)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(git pull:*)",
+      "Bash(cat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(gh api:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(gh repo view:*)",
+      "Bash(rm:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
