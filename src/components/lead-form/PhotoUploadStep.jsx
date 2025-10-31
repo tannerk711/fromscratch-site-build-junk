@@ -1,83 +1,105 @@
 import { useFormContext } from 'react-hook-form';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 export default function PhotoUploadStep() {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const photos = watch('photos') || [];
   const [isUploading, setIsUploading] = useState(false);
-  const widgetRef = useRef(null);
+  const [uploadError, setUploadError] = useState(null);
 
-  useEffect(() => {
-    // Load Cloudinary upload widget script
-    if (!window.cloudinary) {
-      const script = document.createElement('script');
-      script.src = 'https://upload-widget.cloudinary.com/global/all.js';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
+  // Cloudinary configuration for direct API upload
+  const CLOUDINARY_CLOUD_NAME = 'dk6zsdaaj';
+  const CLOUDINARY_UPLOAD_PRESET = 'junk-removal-unsigned';
+  const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-  const openUploadWidget = () => {
-    if (!window.cloudinary) {
-      alert('Upload widget is still loading. Please try again in a moment.');
-      return;
+  const validateFile = (file) => {
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return 'Please upload a valid image file (JPG, PNG, or WEBP)';
     }
 
-    // Cloudinary configuration (hardcoded for client-side upload)
-    const cloudName = 'dk6zsdaaj';
-    const uploadPreset = 'junk-removal-unsigned';
+    // Check file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      return 'File size must be less than 10MB';
+    }
 
-    console.log('Initializing Cloudinary widget with:', { cloudName, uploadPreset });
+    return null;
+  };
 
-    widgetRef.current = window.cloudinary.createUploadWidget(
-      {
-        cloudName,
-        uploadPreset,
-        sources: ['local', 'camera'],
-        multiple: true,
-        maxFiles: 10,
-        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
-        maxFileSize: 10000000, // 10MB
-        cropping: false,
-        resourceType: 'image',
-      },
-      (error, result) => {
-        if (error) {
-          console.error('Upload error:', error);
-          console.error('Error details:', {
-            message: error.message,
-            statusText: error.statusText,
-            status: error.status,
-            name: error.name,
-            fullError: JSON.stringify(error, null, 2)
-          });
-          alert(`Upload failed: ${error.statusText || error.message || 'Unknown error'}. Check console for details.`);
-          setIsUploading(false);
-          return;
-        }
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'junk-removal-leads');
 
-        if (result.event === 'queues-start') {
-          setIsUploading(true);
-        }
+    console.log('Uploading to Cloudinary:', {
+      cloudName: CLOUDINARY_CLOUD_NAME,
+      uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type
+    });
 
-        if (result.event === 'success') {
-          const newPhoto = {
-            url: result.info.secure_url,
-            publicId: result.info.public_id,
-            thumbnail: result.info.thumbnail_url,
-          };
+    try {
+      const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+        method: 'POST',
+        body: formData
+      });
 
-          const currentPhotos = watch('photos') || [];
-          setValue('photos', [...currentPhotos, newPhoto], { shouldValidate: true });
-        }
-
-        if (result.event === 'queues-end') {
-          setIsUploading(false);
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Cloudinary upload failed:', errorData);
+        throw new Error(errorData.error?.message || `Upload failed with status ${response.status}`);
       }
-    );
 
-    widgetRef.current.open();
+      const data = await response.json();
+      console.log('Cloudinary upload success:', data);
+
+      return {
+        url: data.secure_url,
+        publicId: data.public_id,
+        thumbnail: data.thumbnail_url || data.secure_url
+      };
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    }
+  };
+
+  const handleFileSelect = async (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (files.length === 0) return;
+
+    setUploadError(null);
+    setIsUploading(true);
+
+    try {
+      // Validate and upload each file
+      for (const file of files) {
+        // Validate file
+        const validationError = validateFile(file);
+        if (validationError) {
+          setUploadError(validationError);
+          continue;
+        }
+
+        // Upload to Cloudinary
+        const uploadedPhoto = await uploadToCloudinary(file);
+
+        // Add to form photos array
+        const currentPhotos = watch('photos') || [];
+        setValue('photos', [...currentPhotos, uploadedPhoto], { shouldValidate: true });
+      }
+    } catch (error) {
+      setUploadError(error.message || 'Upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      event.target.value = '';
+    }
   };
 
   const removePhoto = (index) => {
@@ -96,11 +118,11 @@ export default function PhotoUploadStep() {
       </p>
 
       <div className="mt-6">
-        <button
-          type="button"
-          onClick={openUploadWidget}
-          disabled={isUploading}
-          className="relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 hover:border-slate-400 hover:bg-slate-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        <label
+          htmlFor="photo-upload"
+          className={`relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 hover:border-slate-400 hover:bg-slate-100 transition-all cursor-pointer ${
+            isUploading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
           {isUploading ? (
             <>
@@ -130,7 +152,40 @@ export default function PhotoUploadStep() {
               </p>
             </>
           )}
-        </button>
+          <input
+            id="photo-upload"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            multiple
+            onChange={handleFileSelect}
+            disabled={isUploading}
+            className="sr-only"
+          />
+        </label>
+
+        {uploadError && (
+          <div className="mt-4 rounded-lg bg-red-50 p-4">
+            <div className="flex">
+              <svg
+                className="h-5 w-5 text-red-600 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                />
+              </svg>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-red-900">Upload Error</p>
+                <p className="mt-1 text-sm text-red-800">{uploadError}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {photos.length > 0 && (
           <div className="mt-6">
