@@ -1,19 +1,49 @@
 import { useFormContext } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// Force fresh Vercel deployment with correct Root Directory setting
+// Server-side config loading for Vercel compatibility
 export default function PhotoUploadStep() {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const photos = watch('photos') || [];
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [cloudinaryConfig, setCloudinaryConfig] = useState(null);
+  const [configLoading, setConfigLoading] = useState(true);
 
-  // Cloudinary configuration for direct API upload from environment variables
-  const CLOUDINARY_CLOUD_NAME = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  // Fetch Cloudinary config from server-side API (fixes Vercel env var issue)
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        console.log('📥 Fetching Cloudinary config from server...');
+        const response = await fetch('/api/config');
 
-  console.log('🚀 PhotoUploadStep v2.0 - Direct API Upload Loaded');
+        if (!response.ok) {
+          throw new Error(`Config API failed: ${response.status}`);
+        }
+
+        const config = await response.json();
+
+        if (!config.cloudName || !config.uploadPreset) {
+          throw new Error('Invalid config received from server');
+        }
+
+        setCloudinaryConfig(config);
+        console.log('✅ Cloudinary config loaded:', {
+          cloudName: config.cloudName,
+          uploadPreset: config.uploadPreset.substring(0, 5) + '***'
+        });
+      } catch (error) {
+        console.error('❌ Failed to load Cloudinary config:', error);
+        setUploadError('Configuration error. Please refresh the page.');
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
+
+  console.log('🚀 PhotoUploadStep v3.0 - Server-Side Config Loaded');
 
   const validateFile = (file) => {
     // Check file type
@@ -32,21 +62,28 @@ export default function PhotoUploadStep() {
   };
 
   const uploadToCloudinary = async (file) => {
+    // Ensure config is loaded before uploading
+    if (!cloudinaryConfig) {
+      throw new Error('Cloudinary configuration not loaded');
+    }
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
+
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
     formData.append('folder', 'junk-removal-leads');
 
     console.log('Uploading to Cloudinary:', {
-      cloudName: CLOUDINARY_CLOUD_NAME,
-      uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+      cloudName: cloudinaryConfig.cloudName,
+      uploadPreset: cloudinaryConfig.uploadPreset,
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type
     });
 
     try {
-      const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData
       });
@@ -124,10 +161,15 @@ export default function PhotoUploadStep() {
         <label
           htmlFor="photo-upload"
           className={`relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 hover:border-slate-400 hover:bg-slate-100 transition-all cursor-pointer ${
-            isUploading ? 'opacity-50 cursor-not-allowed' : ''
+            (isUploading || configLoading) ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {isUploading ? (
+          {configLoading ? (
+            <>
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600"></div>
+              <p className="mt-4 text-sm font-medium text-slate-900">Loading configuration...</p>
+            </>
+          ) : isUploading ? (
             <>
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600"></div>
               <p className="mt-4 text-sm font-medium text-slate-900">Uploading photos...</p>
@@ -161,7 +203,7 @@ export default function PhotoUploadStep() {
             accept="image/jpeg,image/jpg,image/png,image/webp"
             multiple
             onChange={handleFileSelect}
-            disabled={isUploading}
+            disabled={isUploading || configLoading || !cloudinaryConfig}
             className="sr-only"
           />
         </label>
