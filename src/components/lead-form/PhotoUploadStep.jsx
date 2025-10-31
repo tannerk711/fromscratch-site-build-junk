@@ -23,9 +23,9 @@ export default function PhotoUploadStep() {
       return;
     }
 
-    // You'll need to replace these with your actual Cloudinary credentials
-    const cloudName = import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME || 'YOUR_CLOUD_NAME';
-    const uploadPreset = import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'YOUR_UPLOAD_PRESET';
+    // Cloudinary configuration (hardcoded for client-side upload)
+    const cloudName = 'dk6zsdaaj';
+    const uploadPreset = 'junk-haulers';
 
     widgetRef.current = window.cloudinary.createUploadWidget(
       {
