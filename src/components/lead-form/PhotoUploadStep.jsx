@@ -27,6 +27,8 @@ export default function PhotoUploadStep() {
     const cloudName = 'dk6zsdaaj';
     const uploadPreset = 'junk-haulers';
 
+    console.log('Initializing Cloudinary widget with:', { cloudName, uploadPreset });
+
     widgetRef.current = window.cloudinary.createUploadWidget(
       {
         cloudName,
@@ -42,6 +44,14 @@ export default function PhotoUploadStep() {
       (error, result) => {
         if (error) {
           console.error('Upload error:', error);
+          console.error('Error details:', {
+            message: error.message,
+            statusText: error.statusText,
+            status: error.status,
+            name: error.name,
+            fullError: JSON.stringify(error, null, 2)
+          });
+          alert(`Upload failed: ${error.statusText || error.message || 'Unknown error'}. Check console for details.`);
           setIsUploading(false);
           return;
         }
