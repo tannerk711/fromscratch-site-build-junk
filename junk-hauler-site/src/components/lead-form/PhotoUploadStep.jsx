@@ -1,49 +1,20 @@
 import { useFormContext } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-// Server-side config loading for Vercel compatibility
+// Cloudinary config - these values are public and safe to hardcode
+// Unsigned uploads are designed to have these values in client-side code
+const CLOUDINARY_CONFIG = {
+  cloudName: 'dk6zsdaaj',
+  uploadPreset: 'junk-haulers'
+};
+
 export default function PhotoUploadStep() {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const photos = watch('photos') || [];
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
-  const [cloudinaryConfig, setCloudinaryConfig] = useState(null);
-  const [configLoading, setConfigLoading] = useState(true);
 
-  // Fetch Cloudinary config from server-side API (fixes Vercel env var issue)
-  useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        console.log('📥 Fetching Cloudinary config from server...');
-        const response = await fetch('/api/config');
-
-        if (!response.ok) {
-          throw new Error(`Config API failed: ${response.status}`);
-        }
-
-        const config = await response.json();
-
-        if (!config.cloudName || !config.uploadPreset) {
-          throw new Error('Invalid config received from server');
-        }
-
-        setCloudinaryConfig(config);
-        console.log('✅ Cloudinary config loaded:', {
-          cloudName: config.cloudName,
-          uploadPreset: config.uploadPreset.substring(0, 5) + '***'
-        });
-      } catch (error) {
-        console.error('❌ Failed to load Cloudinary config:', error);
-        setUploadError('Configuration error. Please refresh the page.');
-      } finally {
-        setConfigLoading(false);
-      }
-    };
-
-    loadConfig();
-  }, []);
-
-  console.log('🚀 PhotoUploadStep v3.1 - Server-Side Config with Runtime Env Vars');
+  console.log('🚀 PhotoUploadStep v4.0 - Direct Cloudinary Upload (No Server Config)');
 
   const validateFile = (file) => {
     // Check file type
@@ -62,35 +33,18 @@ export default function PhotoUploadStep() {
   };
 
   const uploadToCloudinary = async (file) => {
-    // Ensure config is loaded before uploading
-    if (!cloudinaryConfig) {
-      throw new Error('Cloudinary configuration not loaded');
-    }
-
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`;
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
     formData.append('folder', 'junk-removal-leads');
 
-    // DEBUG: Comprehensive logging before upload
-    console.log('🔍 UPLOAD DEBUG - Full config:', {
-      cloudinaryConfig: cloudinaryConfig,
-      cloudName: cloudinaryConfig.cloudName,
-      cloudNameType: typeof cloudinaryConfig.cloudName,
-      cloudNameValue: JSON.stringify(cloudinaryConfig.cloudName),
-      uploadPreset: cloudinaryConfig.uploadPreset,
-      uploadPresetType: typeof cloudinaryConfig.uploadPreset,
-      uploadPresetValue: JSON.stringify(cloudinaryConfig.uploadPreset),
-      uploadUrl: uploadUrl,
+    console.log('📤 Uploading to Cloudinary:', {
+      cloudName: CLOUDINARY_CONFIG.cloudName,
+      uploadPreset: CLOUDINARY_CONFIG.uploadPreset,
       fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
-        key,
-        value: value instanceof File ? `File: ${value.name}` : value
-      }))
+      fileSize: file.size
     });
 
     try {
@@ -172,15 +126,10 @@ export default function PhotoUploadStep() {
         <label
           htmlFor="photo-upload"
           className={`relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 hover:border-slate-400 hover:bg-slate-100 transition-all cursor-pointer ${
-            (isUploading || configLoading) ? 'opacity-50 cursor-not-allowed' : ''
+            isUploading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {configLoading ? (
-            <>
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600"></div>
-              <p className="mt-4 text-sm font-medium text-slate-900">Loading configuration...</p>
-            </>
-          ) : isUploading ? (
+          {isUploading ? (
             <>
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600"></div>
               <p className="mt-4 text-sm font-medium text-slate-900">Uploading photos...</p>
