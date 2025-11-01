@@ -14,20 +14,22 @@ export const prerender = false;
 export async function GET({ request }) {
   try {
     // Collect all environment variable info for debugging
+    // Using process.env for RUNTIME access (not build-time inlining)
     const envDebug = {
-      'CLOUDINARY_CLOUD_NAME': import.meta.env.CLOUDINARY_CLOUD_NAME,
-      'CLOUDINARY_UPLOAD_PRESET': import.meta.env.CLOUDINARY_UPLOAD_PRESET,
-      'PUBLIC_CLOUDINARY_CLOUD_NAME': import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
-      'PUBLIC_CLOUDINARY_UPLOAD_PRESET': import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
-      'All CLOUDINARY keys': Object.keys(import.meta.env).filter(k => k.includes('CLOUDINARY'))
+      'CLOUDINARY_CLOUD_NAME': process.env.CLOUDINARY_CLOUD_NAME,
+      'CLOUDINARY_UPLOAD_PRESET': process.env.CLOUDINARY_UPLOAD_PRESET,
+      'PUBLIC_CLOUDINARY_CLOUD_NAME': process.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
+      'PUBLIC_CLOUDINARY_UPLOAD_PRESET': process.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+      'All CLOUDINARY keys': Object.keys(process.env).filter(k => k.includes('CLOUDINARY'))
     };
 
     console.log('🔍 ENV VAR DEBUG:', envDebug);
 
     // Try non-PUBLIC_ first, fallback to PUBLIC_ if undefined
+    // Using process.env for RUNTIME access to Vercel environment variables
     const cloudinaryConfig = {
-      cloudName: import.meta.env.CLOUDINARY_CLOUD_NAME || import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
-      uploadPreset: import.meta.env.CLOUDINARY_UPLOAD_PRESET || import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME || process.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
+      uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || process.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
     };
 
     // Collect debug info about the values being used
