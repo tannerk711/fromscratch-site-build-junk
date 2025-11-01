@@ -11,7 +11,7 @@ export const prerender = false;
  * environment variables are used at runtime.
  */
 
-export async function GET(request) {
+export async function GET({ request }) {
   try {
     // Collect all environment variable info for debugging
     const envDebug = {
