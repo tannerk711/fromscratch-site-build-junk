@@ -74,12 +74,23 @@ export default function PhotoUploadStep() {
     formData.append('upload_preset', cloudinaryConfig.uploadPreset);
     formData.append('folder', 'junk-removal-leads');
 
-    console.log('Uploading to Cloudinary:', {
+    // DEBUG: Comprehensive logging before upload
+    console.log('🔍 UPLOAD DEBUG - Full config:', {
+      cloudinaryConfig: cloudinaryConfig,
       cloudName: cloudinaryConfig.cloudName,
+      cloudNameType: typeof cloudinaryConfig.cloudName,
+      cloudNameValue: JSON.stringify(cloudinaryConfig.cloudName),
       uploadPreset: cloudinaryConfig.uploadPreset,
+      uploadPresetType: typeof cloudinaryConfig.uploadPreset,
+      uploadPresetValue: JSON.stringify(cloudinaryConfig.uploadPreset),
+      uploadUrl: uploadUrl,
       fileName: file.name,
       fileSize: file.size,
-      fileType: file.type
+      fileType: file.type,
+      formDataEntries: Array.from(formData.entries()).map(([key, value]) => ({
+        key,
+        value: value instanceof File ? `File: ${value.name}` : value
+      }))
     });
 
     try {

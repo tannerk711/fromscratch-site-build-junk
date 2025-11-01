@@ -13,10 +13,30 @@ export const prerender = false;
 
 export async function GET() {
   try {
+    // DEBUG: Log ALL Cloudinary-related environment variables
+    console.log('🔍 ENV VAR DEBUG - All Cloudinary vars:', {
+      'CLOUDINARY_CLOUD_NAME': import.meta.env.CLOUDINARY_CLOUD_NAME,
+      'CLOUDINARY_UPLOAD_PRESET': import.meta.env.CLOUDINARY_UPLOAD_PRESET,
+      'PUBLIC_CLOUDINARY_CLOUD_NAME': import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
+      'PUBLIC_CLOUDINARY_UPLOAD_PRESET': import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+      'All CLOUDINARY keys': Object.keys(import.meta.env).filter(k => k.includes('CLOUDINARY'))
+    });
+
+    // Try non-PUBLIC_ first, fallback to PUBLIC_ if undefined
     const cloudinaryConfig = {
-      cloudName: import.meta.env.CLOUDINARY_CLOUD_NAME,
-      uploadPreset: import.meta.env.CLOUDINARY_UPLOAD_PRESET,
+      cloudName: import.meta.env.CLOUDINARY_CLOUD_NAME || import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
+      uploadPreset: import.meta.env.CLOUDINARY_UPLOAD_PRESET || import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
     };
+
+    // DEBUG: Log the actual values being used
+    console.log('🔍 CONFIG VALUES:', {
+      cloudName: cloudinaryConfig.cloudName,
+      cloudNameType: typeof cloudinaryConfig.cloudName,
+      cloudNameLength: cloudinaryConfig.cloudName?.length,
+      uploadPreset: cloudinaryConfig.uploadPreset,
+      uploadPresetType: typeof cloudinaryConfig.uploadPreset,
+      uploadPresetLength: cloudinaryConfig.uploadPreset?.length,
+    });
 
     // Validate that config is present
     if (!cloudinaryConfig.cloudName || !cloudinaryConfig.uploadPreset) {
