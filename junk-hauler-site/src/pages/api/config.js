@@ -4,8 +4,9 @@ export const prerender = false;
  * Server-side configuration endpoint
  * Returns Cloudinary credentials from environment variables
  *
- * This solves the Vercel deployment issue where PUBLIC_ environment
- * variables get inlined at build time instead of using runtime values.
+ * IMPORTANT: Uses non-PUBLIC_ prefixed env vars to avoid build-time inlining.
+ * Astro/Vite inlines PUBLIC_ vars at build time, making them static literals.
+ * Server-side API routes should use non-PUBLIC_ vars for runtime access.
  * By fetching credentials from the server, we ensure Vercel's dashboard
  * environment variables are used at runtime.
  */
@@ -13,8 +14,8 @@ export const prerender = false;
 export async function GET() {
   try {
     const cloudinaryConfig = {
-      cloudName: import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME,
-      uploadPreset: import.meta.env.PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+      cloudName: import.meta.env.CLOUDINARY_CLOUD_NAME,
+      uploadPreset: import.meta.env.CLOUDINARY_UPLOAD_PRESET,
     };
 
     // Validate that config is present
