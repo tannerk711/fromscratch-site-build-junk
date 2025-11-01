@@ -1,109 +1,68 @@
 import { useFormContext } from 'react-hook-form';
-import { useState } from 'react';
-
-// Cloudinary config - these values are public and safe to hardcode
-// Unsigned uploads are designed to have these values in client-side code
-const CLOUDINARY_CONFIG = {
-  cloudName: 'dk6zsdaaj',
-  uploadPreset: 'junk-haulers'
-};
+import { useState, useEffect } from 'react';
 
 export default function PhotoUploadStep() {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const photos = watch('photos') || [];
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [widget, setWidget] = useState(null);
 
-  console.log('🚀 PhotoUploadStep v4.0 - Direct Cloudinary Upload (No Server Config)');
+  console.log('🚀 PhotoUploadStep v5.0 - Cloudinary Official Widget');
 
-  const validateFile = (file) => {
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return 'Please upload a valid image file (JPG, PNG, or WEBP)';
-    }
+  // Initialize Cloudinary Upload Widget
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.cloudinary) {
+      const uploadWidget = window.cloudinary.createUploadWidget(
+        {
+          cloudName: 'dk6zsdaaj',
+          uploadPreset: 'junk-haulers',
+          folder: 'junk-removal-leads',
+          multiple: true,
+          maxFiles: 10,
+          clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxFileSize: 10000000, // 10MB
+          sources: ['local', 'camera'],
+          showAdvancedOptions: false,
+          cropping: false,
+        },
+        (error, result) => {
+          if (error) {
+            console.error('❌ Widget error:', error);
+            setUploadError('Upload failed. Please try again.');
+            setIsUploading(false);
+            return;
+          }
 
-    // Check file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
-      return 'File size must be less than 10MB';
-    }
+          if (result.event === 'success') {
+            console.log('✅ Upload success:', result.info);
+            const currentPhotos = watch('photos') || [];
+            setValue('photos', [
+              ...currentPhotos,
+              {
+                url: result.info.secure_url,
+                publicId: result.info.public_id,
+                thumbnail: result.info.thumbnail_url || result.info.secure_url,
+              },
+            ]);
+          }
 
-    return null;
-  };
-
-  const uploadToCloudinary = async (file) => {
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloudName}/image/upload`;
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
-    formData.append('folder', 'junk-removal-leads');
-
-    console.log('📤 Uploading to Cloudinary:', {
-      cloudName: CLOUDINARY_CONFIG.cloudName,
-      uploadPreset: CLOUDINARY_CONFIG.uploadPreset,
-      fileName: file.name,
-      fileSize: file.size
-    });
-
-    try {
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Cloudinary upload failed:', errorData);
-        throw new Error(errorData.error?.message || `Upload failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Cloudinary upload success:', data);
-
-      return {
-        url: data.secure_url,
-        publicId: data.public_id,
-        thumbnail: data.thumbnail_url || data.secure_url
-      };
-    } catch (error) {
-      console.error('Upload error:', error);
-      throw error;
-    }
-  };
-
-  const handleFileSelect = async (event) => {
-    const files = Array.from(event.target.files || []);
-
-    if (files.length === 0) return;
-
-    setUploadError(null);
-    setIsUploading(true);
-
-    try {
-      // Validate and upload each file
-      for (const file of files) {
-        // Validate file
-        const validationError = validateFile(file);
-        if (validationError) {
-          setUploadError(validationError);
-          continue;
+          if (result.event === 'queues-end') {
+            setIsUploading(false);
+            uploadWidget.close();
+          }
         }
+      );
 
-        // Upload to Cloudinary
-        const uploadedPhoto = await uploadToCloudinary(file);
+      setWidget(uploadWidget);
+    }
+  }, [setValue, watch]);
 
-        // Add to form photos array
-        const currentPhotos = watch('photos') || [];
-        setValue('photos', [...currentPhotos, uploadedPhoto], { shouldValidate: true });
-      }
-    } catch (error) {
-      setUploadError(error.message || 'Upload failed. Please try again.');
-    } finally {
-      setIsUploading(false);
-      // Reset file input
-      event.target.value = '';
+  const openWidget = () => {
+    if (widget) {
+      setUploadError(null);
+      setIsUploading(true);
+      widget.open();
     }
   };
 
@@ -123,10 +82,12 @@ export default function PhotoUploadStep() {
       </p>
 
       <div className="mt-6">
-        <label
-          htmlFor="photo-upload"
-          className={`relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 hover:border-slate-400 hover:bg-slate-100 transition-all cursor-pointer ${
-            isUploading ? 'opacity-50 cursor-not-allowed' : ''
+        <button
+          type="button"
+          onClick={openWidget}
+          disabled={isUploading || !widget}
+          className={`relative flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-12 hover:border-slate-400 hover:bg-slate-100 transition-all ${
+            isUploading || !widget ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           }`}
         >
           {isUploading ? (
@@ -157,16 +118,7 @@ export default function PhotoUploadStep() {
               </p>
             </>
           )}
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            multiple
-            onChange={handleFileSelect}
-            disabled={isUploading || configLoading || !cloudinaryConfig}
-            className="sr-only"
-          />
-        </label>
+        </button>
 
         {uploadError && (
           <div className="mt-4 rounded-lg bg-red-50 p-4">

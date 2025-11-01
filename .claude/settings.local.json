@@ -28,7 +28,11 @@
       "Bash(gh repo view:*)",
       "Bash(rm:*)",
       "Bash(git reset:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(python -m http.server:*)",
+      "Bash(npx serve:*)",
+      "Bash(git log:*)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []
